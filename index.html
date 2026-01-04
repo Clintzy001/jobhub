@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JOBHUB | Jobs, Ads & Market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .brand-purple { background-color: #4A148C; }
+        .text-brand-purple { color: #4A148C; }
+        .brand-off-white { background-color: #F5F5F5; }
+        .modal-animate { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        .market-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    </style>
+</head>
+<body class="brand-off-white min-h-screen pb-24 font-sans">
+
+    <header class="bg-white px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-40">
+        <h1 class="text-2xl font-black tracking-tighter text-brand-purple italic">JOBHUB</h1>
+        <div class="flex gap-5 text-gray-400 items-center">
+            <button onclick="toggleSearch()"><i class="fas fa-search text-lg"></i></button>
+            </div>
+    </header>
+
+    <div id="searchBar" class="hidden bg-white px-6 py-3 border-b border-gray-100 shadow-inner">
+        <input type="text" id="searchInput" onkeyup="handleSearch()" placeholder="Search jobs, ads, or products..." class="w-full p-3 bg-gray-50 rounded-xl outline-none border focus:border-purple-800">
+    </div>
+
+    <div class="flex justify-center gap-2 py-6 overflow-x-auto px-4">
+        <button id="jobTab" onclick="switchTab('jobs')" class="brand-purple text-white px-6 py-2 rounded-xl font-bold shadow-md transition-all text-sm">Jobs</button>
+        <button id="adTab" onclick="switchTab('ads')" class="bg-gray-200 text-gray-600 px-6 py-2 rounded-xl font-bold transition-all text-sm">Ads</button>
+        <button id="marketTab" onclick="switchTab('market')" class="bg-gray-200 text-gray-600 px-6 py-2 rounded-xl font-bold transition-all text-sm">Market</button>
+    </div>
+
+    <main class="px-5 space-y-4" id="listingContainer">
+        </main>
+
+    <div id="postModal" class="fixed inset-0 bg-white z-50 p-6 hidden flex-col modal-animate">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black text-gray-900">New Listing</h2>
+            <button onclick="toggleModal()" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="space-y-5 flex-1 overflow-y-auto">
+            <input type="text" id="listingTitle" placeholder="What are you posting/selling?" class="w-full p-4 border-2 rounded-2xl bg-gray-50 outline-none">
+            <div class="p-5 rounded-2xl border-2 border-dashed border-purple-300 bg-purple-50 text-sm">
+                <p class="text-brand-purple font-bold mb-2 italic">Payment Details:</p>
+                <p><strong>Bank:</strong> OPay | <strong>Acc:</strong> 6119361548</p>
+                <p><strong>Name:</strong> Clinton Chukwuebuka Oleka</p>
+            </div>
+        </div>
+        <button onclick="sendWhatsAppReceipt()" class="w-full py-4 bg-[#25D366] text-white rounded-2xl font-bold mt-4 shadow-xl flex items-center justify-center gap-3">
+            <i class="fab fa-whatsapp"></i> Send Proof & Post
+        </button>
+    </div>
+
+    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around items-center py-4 px-2 shadow-lg">
+        <div onclick="switchTab('jobs')" class="flex flex-col items-center cursor-pointer">
+            <i class="fas fa-home text-brand-purple text-xl"></i>
+            <span class="text-[10px] font-bold text-brand-purple">Home</span>
+        </div>
+        <div onclick="toggleSearch()" class="flex flex-col items-center text-gray-400 cursor-pointer">
+            <i class="fas fa-search text-xl"></i>
+            <span class="text-[10px] font-bold">Search</span>
+        </div>
+        <div class="relative -top-8">
+            <button onclick="toggleModal()" class="brand-purple w-16 h-16 rounded-full shadow-2xl text-white border-4 border-white">
+                <i class="fas fa-plus text-2xl"></i>
+            </button>
+        </div>
+        <div onclick="openGeneralChat()" class="flex flex-col items-center text-gray-400 cursor-pointer">
+            <i class="fas fa-comment-dots text-xl"></i>
+            <span class="text-[10px] font-bold">Chats</span>
+        </div>
+        <div onclick="switchTab('market')" class="flex flex-col items-center text-gray-400 cursor-pointer">
+            <i class="fas fa-store text-xl"></i>
+            <span class="text-[10px] font-bold">Market</span>
+        </div>
+    </nav>
+
+    <script>
+        const myWhatsApp = "2347051337399";
+        let currentType = 'jobs';
+
+        const jobData = [
+            { title: "Graphic Designer", company: "Creative Hub", loc: "Lekki, Lagos", pay: "₦120,000", verified: true },
+            { title: "Delivery Rider", company: "Swift Logistics", loc: "Abuja", pay: "₦80,000", verified: true }
+        ];
+
+        const adData = [
+            { title: "iPhone 13 Pro", company: "Apple Sales", loc: "Lagos", pay: "₦450,000", verified: true },
+            { title: "Toyota Corolla 2015", company: "Auto Zone", loc: "Ibadan", pay: "₦4,500,000", verified: true }
+        ];
+
+        const marketData = [
+            { title: "Designer Sneakers", price: "₦25,000", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200", desc: "Grade A quality" },
+            { title: "Smart Watch", price: "₦15,000", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200", desc: "Waterproof Series 7" },
+            { title: "Wireless Pods", price: "₦10,000", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200", desc: "Noise cancelling" },
+            { title: "Laptop Stand", price: "₦8,500", img: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=200", desc: "Aluminum foldable" }
+        ];
+
+        function renderListings(items, type) {
+            const container = document.getElementById('listingContainer');
+            container.innerHTML = '';
+            
+            let headerHtml = `<h2 class="text-lg font-bold text-gray-800 mb-2 uppercase tracking-wide">${type}</h2>`;
+            container.insertAdjacentHTML('beforeend', headerHtml);
+
+            if (type === 'market') {
+                const grid = document.createElement('div');
+                grid.className = 'market-grid';
+                items.forEach(item => {
+                    grid.innerHTML += `
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                        <img src="${item.img}" class="w-full h-32 object-cover">
+                        <div class="p-3">
+                            <h3 class="font-bold text-sm truncate">${item.title}</h3>
+                            <p class="text-brand-purple font-black text-md">${item.price}</p>
+                            <button onclick="buyProduct('${item.title}')" class="w-full mt-2 py-2 bg-green-500 text-white text-[10px] font-bold rounded-lg uppercase">Buy Now</button>
+                        </div>
+                    </div>`;
+                });
+                container.appendChild(grid);
+            } else {
+                const icon = type === 'jobs' ? 'fa-briefcase' : 'fa-tag';
+                items.forEach(item => {
+                    container.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl border-2 border-[#4A148C] shadow-sm flex gap-4">
+                        <div class="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center text-brand-purple text-xl"><i class="fas ${icon}"></i></div>
+                        <div class="flex-1">
+                            <div class="flex justify-between font-bold">${item.title} ${item.verified ? '<span class="text-green-600 text-[10px]">VERIFIED</span>' : ''}</div>
+                            <p class="text-xs text-gray-500">${item.company || 'Market'} • ${item.loc || 'Nigeria'}</p>
+                            <div class="flex justify-between items-center mt-3 font-extrabold text-brand-purple">${item.pay || item.price}</div>
+                        </div>
+                    </div>`;
+                });
+            }
+        }
+
+        function switchTab(type) {
+            currentType = type;
+            const tabs = ['jobTab', 'adTab', 'marketTab'];
+            tabs.forEach(tabId => {
+                const btn = document.getElementById(tabId);
+                if (tabId.startsWith(type)) {
+                    btn.className = "brand-purple text-white px-6 py-2 rounded-xl font-bold shadow-md transition-all text-sm";
+                } else {
+                    btn.className = "bg-gray-200 text-gray-600 px-6 py-2 rounded-xl font-bold transition-all text-sm";
+                }
+            });
+
+            if(type === 'jobs') renderListings(jobData, 'jobs');
+            if(type === 'ads') renderListings(adData, 'ads');
+            if(type === 'market') renderListings(marketData, 'market');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            let data = currentType === 'jobs' ? jobData : (currentType === 'ads' ? adData : marketData);
+            const filtered = data.filter(item => item.title.toLowerCase().includes(query));
+            renderListings(filtered, currentType);
+        }
+
+        function buyProduct(name) {
+            window.open(`https://wa.me/${myWhatsApp}?text=I want to buy: ${name}`);
+        }
+
+        function toggleSearch() { document.getElementById('searchBar').classList.toggle('hidden'); }
+        function toggleModal() { document.getElementById('postModal').classList.toggle('hidden'); document.getElementById('postModal').classList.toggle('flex'); }
+        function openGeneralChat() { window.open(`https://wa.me/${myWhatsApp}?text=Hello JOBHUB!`); }
+        function sendWhatsAppReceipt() {
+            const title = document.getElementById('listingTitle').value || "New Listing";
+            window.open(`https://wa.me/${myWhatsApp}?text=I paid for: ${title}`);
+        }
+
+        renderListings(jobData, 'jobs');
+    </script>
+</body>
+</html>
